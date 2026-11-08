@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "io.github.freshfall999.anchoroptimizer.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ClientLevelAccessor",
+		"RespawnAnchorBlockMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}

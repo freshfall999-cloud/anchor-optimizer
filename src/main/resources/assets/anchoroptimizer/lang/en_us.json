@@ -1,0 +1,6 @@
+{
+	"key.category.anchoroptimizer.main": "Anchor Optimizer",
+	"key.anchoroptimizer.toggle": "Toggle Anchor Optimizer",
+	"message.anchoroptimizer.enabled": "Anchor Optimizer: ON",
+	"message.anchoroptimizer.disabled": "Anchor Optimizer: OFF"
+}

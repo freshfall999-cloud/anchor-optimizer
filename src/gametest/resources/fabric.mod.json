@@ -1,0 +1,16 @@
+{
+	"schemaVersion": 1,
+	"id": "anchoroptimizer-gametest",
+	"version": "1.0.0",
+	"name": "Anchor Optimizer Game Tests",
+	"environment": "client",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"io.github.freshfall999.anchoroptimizer.test.AnchorOptimizerClientGameTest"
+		]
+	},
+	"depends": {
+		"anchoroptimizer": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

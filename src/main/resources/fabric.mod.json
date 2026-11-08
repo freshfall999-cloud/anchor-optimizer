@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "anchoroptimizer",
+	"version": "${version}",
+	"name": "Anchor Optimizer",
+	"description": "Client-side respawn anchor prediction: an anchor you detonate disappears instantly on your screen instead of after a server round-trip, so you can place the next one right away. No automation, no extra packets.",
+	"authors": [
+		"freshfall999"
+	],
+	"contact": {
+		"sources": "https://github.com/freshfall999-cloud/anchor-optimizer",
+		"issues": "https://github.com/freshfall999-cloud/anchor-optimizer/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/anchoroptimizer/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.freshfall999.anchoroptimizer.AnchorOptimizerClient"
+		]
+	},
+	"mixins": [
+		{
+			"config": "anchoroptimizer.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-key-binding-api-v1": "*",
+		"fabric-lifecycle-events-v1": "*"
+	}
+}

@@ -1,0 +1,45 @@
+name: release
+
+# Push a tag like v1.0.0 (or run this manually) to publish build/libs/anchor-optimizer-<version>.jar
+# as a GitHub Release, so it can be downloaded directly as a .jar.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build
+        run: ./gradlew build
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          tag="v$version"
+          jar="build/libs/anchor-optimizer-$version.jar"
+          cat > notes.md <<NOTES
+          Client-side Fabric mod for **Minecraft 1.21.11**: a respawn anchor you detonate disappears on your screen instantly instead of after a full ping, so your next place/charge/detonate clicks hit the right thing.
+
+          **Install:** Fabric Loader 0.17.3+ and Fabric API for 1.21.11, then put \`anchor-optimizer-$version.jar\` in your \`mods\` folder. Client only.
+
+          On servers whose anticheat checks what your client has already received (GrimAC and similar) the prediction pauses itself, so you play exactly like vanilla there. Server rules still vary; check before using it. Details and test results: see the README.
+          NOTES
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$jar" --clobber
+          else
+            gh release create "$tag" "$jar" --target "$GITHUB_SHA" \
+              --title "Anchor Optimizer $version for Fabric 1.21.11" --notes-file notes.md
+          fi

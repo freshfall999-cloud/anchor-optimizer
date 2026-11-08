@@ -5,6 +5,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -20,25 +21,39 @@ public final class AnchorOptimizerClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		AnchorOptimizerConfig.load();
 
-		// Unbound by default; set it in Options > Controls > Key Binds if you want a toggle.
-		KeyMapping toggleKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-				"key." + MOD_ID + ".toggle",
+		// Both unbound by default; set them in Options > Controls > Key Binds if you want toggles.
+		KeyMapping togglePrediction = register("toggle");
+		KeyMapping toggleFastUse = register("toggle_fast_use");
+
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			while (togglePrediction.consumeClick()) {
+				boolean enabled = !AnchorOptimizerConfig.isEnabled();
+				AnchorOptimizerConfig.setEnabled(enabled);
+				announce(client, enabled ? "enabled" : "disabled");
+			}
+			while (toggleFastUse.consumeClick()) {
+				boolean enabled = !AnchorOptimizerConfig.fastAnchorUse();
+				AnchorOptimizerConfig.setFastAnchorUse(enabled);
+				announce(client, enabled ? "fast_use_enabled" : "fast_use_disabled");
+			}
+		});
+
+		LOGGER.info("Anchor Optimizer loaded (prediction {}, fast anchor use {})",
+				AnchorOptimizerConfig.isEnabled() ? "on" : "off", AnchorOptimizerConfig.fastAnchorUse() ? "on" : "off");
+	}
+
+	private static KeyMapping register(String name) {
+		return KeyBindingHelper.registerKeyBinding(new KeyMapping(
+				"key." + MOD_ID + "." + name,
 				InputConstants.Type.KEYSYM,
 				InputConstants.UNKNOWN.getValue(),
 				CATEGORY
 		));
+	}
 
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (toggleKey.consumeClick()) {
-				boolean enabled = !AnchorOptimizerConfig.isEnabled();
-				AnchorOptimizerConfig.setEnabled(enabled);
-				if (client.player != null) {
-					client.player.displayClientMessage(Component.translatable(
-							"message." + MOD_ID + (enabled ? ".enabled" : ".disabled")), true);
-				}
-			}
-		});
-
-		LOGGER.info("Anchor Optimizer loaded (prediction {})", AnchorOptimizerConfig.isEnabled() ? "enabled" : "disabled");
+	private static void announce(Minecraft client, String message) {
+		if (client.player != null) {
+			client.player.displayClientMessage(Component.translatable("message." + MOD_ID + "." + message), true);
+		}
 	}
 }

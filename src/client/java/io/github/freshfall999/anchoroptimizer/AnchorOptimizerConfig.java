@@ -15,15 +15,20 @@ public final class AnchorOptimizerConfig {
 	private static final String FILE_NAME = AnchorOptimizerClient.MOD_ID + ".properties";
 	private static final String KEY_ENABLED = "enabled";
 	private static final String KEY_PAUSE_ON_ANTICHEAT = "pauseOnAnticheatServers";
+	private static final String KEY_FAST_ANCHOR_USE = "fastAnchorUse";
 	private static final String COMMENT = """
 			Anchor Optimizer
 			enabled: turn the anchor prediction on or off (the toggle key changes this too).
 			pauseOnAnticheatServers: on servers whose anticheat checks what your client has already received
 			(GrimAC and similar), acting on a predicted anchor removal gets flagged and cancelled, so the
-			prediction pauses itself there. Only set this to false if you accept getting flagged.""";
+			prediction pauses itself there. Only set this to false if you accept getting flagged.
+			fastAnchorUse: holding right-click with an anchor or glowstone, or while looking at an anchor, repeats
+			every tick instead of every 4 ticks. This sends more packets than vanilla ("FastPlace"), which many
+			servers don't allow.""";
 
 	private static volatile boolean enabled = true;
 	private static volatile boolean pauseOnAnticheatServers = true;
+	private static volatile boolean fastAnchorUse = true;
 
 	private AnchorOptimizerConfig() {
 	}
@@ -46,6 +51,15 @@ public final class AnchorOptimizerConfig {
 		save();
 	}
 
+	public static boolean fastAnchorUse() {
+		return fastAnchorUse;
+	}
+
+	public static void setFastAnchorUse(boolean value) {
+		fastAnchorUse = value;
+		save();
+	}
+
 	private static Path path() {
 		return FabricLoader.getInstance().getConfigDir().resolve(FILE_NAME);
 	}
@@ -58,6 +72,7 @@ public final class AnchorOptimizerConfig {
 				properties.load(reader);
 				enabled = Boolean.parseBoolean(properties.getProperty(KEY_ENABLED, "true").trim());
 				pauseOnAnticheatServers = Boolean.parseBoolean(properties.getProperty(KEY_PAUSE_ON_ANTICHEAT, "true").trim());
+				fastAnchorUse = Boolean.parseBoolean(properties.getProperty(KEY_FAST_ANCHOR_USE, "true").trim());
 			} catch (IOException | IllegalArgumentException e) {
 				AnchorOptimizerClient.LOGGER.warn("Could not read {}, using defaults", path, e);
 			}
@@ -70,6 +85,7 @@ public final class AnchorOptimizerConfig {
 		Properties properties = new Properties();
 		properties.setProperty(KEY_ENABLED, Boolean.toString(enabled));
 		properties.setProperty(KEY_PAUSE_ON_ANTICHEAT, Boolean.toString(pauseOnAnticheatServers));
+		properties.setProperty(KEY_FAST_ANCHOR_USE, Boolean.toString(fastAnchorUse));
 		try {
 			Files.createDirectories(path.getParent());
 			try (Writer writer = Files.newBufferedWriter(path)) {

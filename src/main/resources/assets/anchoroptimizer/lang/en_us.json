@@ -1,7 +1,10 @@
 {
 	"key.category.anchoroptimizer.main": "Anchor Optimizer",
-	"key.anchoroptimizer.toggle": "Toggle Anchor Optimizer",
-	"message.anchoroptimizer.enabled": "Anchor Optimizer: ON",
-	"message.anchoroptimizer.disabled": "Anchor Optimizer: OFF",
-	"message.anchoroptimizer.paused_anticheat": "[Anchor Optimizer] This server's anticheat checks what your client has already received, so anchor prediction is paused here (you play exactly like vanilla). See config/anchoroptimizer.properties."
+	"key.anchoroptimizer.toggle": "Toggle Anchor Prediction",
+	"message.anchoroptimizer.enabled": "Anchor prediction: ON",
+	"message.anchoroptimizer.disabled": "Anchor prediction: OFF",
+	"message.anchoroptimizer.paused_anticheat": "[Anchor Optimizer] This server's anticheat checks what your client has already received, so anchor prediction is paused here (you play exactly like vanilla). See config/anchoroptimizer.properties.",
+	"key.anchoroptimizer.toggle_fast_use": "Toggle Fast Anchor Use",
+	"message.anchoroptimizer.fast_use_enabled": "Fast anchor use: ON",
+	"message.anchoroptimizer.fast_use_disabled": "Fast anchor use: OFF"
 }

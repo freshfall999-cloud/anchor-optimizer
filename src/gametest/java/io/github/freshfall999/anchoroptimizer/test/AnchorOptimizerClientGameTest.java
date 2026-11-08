@@ -13,6 +13,7 @@ import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
@@ -46,6 +47,8 @@ public class AnchorOptimizerClientGameTest implements FabricClientGameTest {
 			wrongPredictionIsRolledBack(context, sp);
 			disabledBehavesLikeVanilla(context, sp);
 			netherAnchorSetsSpawnAndIsNotPredicted(context, sp);
+			fastAnchorUseRepeatsEveryTick(context, sp);
+			fastAnchorUseStopsAfterDetonation(context, sp);
 			pausedOnServersWithTransactionAnticheat(context, sp);
 		}
 
@@ -164,6 +167,70 @@ public class AnchorOptimizerClientGameTest implements FabricClientGameTest {
 		BlockState clientAfter = context.computeOnClient(client -> client.level.getBlockState(pos));
 		check(isAnchor(clientAfter, 4), "nether: client should still show the anchor, got " + clientAfter);
 		LOGGER.info("PASS netherAnchorSetsSpawnAndIsNotPredicted");
+	}
+
+	/**
+	 * Holding right-click with glowstone on an anchor: with fast anchor use it charges every tick, in vanilla every
+	 * 4 ticks. A single click must still be exactly one charge (no double use in the same tick).
+	 */
+	private static void fastAnchorUseRepeatsEveryTick(ClientGameTestContext context, TestSingleplayerContext sp) {
+		int fast = chargesAfterHoldingRightClick(context, sp, new BlockPos(200, FLAT_Y, 0), 3, true);
+		check(fast == 3, "fast use: 3 ticks held should charge 3 times, got " + fast);
+		int vanilla = chargesAfterHoldingRightClick(context, sp, new BlockPos(220, FLAT_Y, 0), 3, false);
+		check(vanilla == 1, "vanilla: 3 ticks held should charge once (4-tick delay), got " + vanilla);
+		int singleClick = chargesAfterHoldingRightClick(context, sp, new BlockPos(240, FLAT_Y, 0), 1, true);
+		check(singleClick == 1, "fast use: a single click must charge exactly once, got " + singleClick);
+		LOGGER.info("PASS fastAnchorUseRepeatsEveryTick");
+	}
+
+	/**
+	 * Holding glowstone through the whole thing: 4 charges, the 5th use detonates. After the detonation the vanilla
+	 * delay must come back, so the next 3 held ticks don't place glowstone blocks where the anchor was.
+	 */
+	private static void fastAnchorUseStopsAfterDetonation(ClientGameTestContext context, TestSingleplayerContext sp) {
+		BlockPos pos = new BlockPos(260, FLAT_Y, 0);
+		setUpAnchor(context, sp, Level.OVERWORLD, pos, 0);
+		sp.getServer().runCommand("item replace entity @a weapon.mainhand with minecraft:glowstone 64");
+		context.waitFor(client -> client.player.getMainHandItem().is(Items.GLOWSTONE)
+				&& client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos));
+
+		context.getInput().holdMouseFor(1, 8); // ticks 1-4 charge, tick 5 detonates, ticks 6-8 must do nothing
+		context.waitTicks(10);
+
+		BlockState server = serverState(sp, Level.OVERWORLD, pos);
+		check(isGone(server), "the anchor should have exploded within 8 held ticks, got " + server);
+		int glowstoneBlocks = sp.getServer().computeOnServer(s -> {
+			int count = 0;
+			for (BlockPos p : BlockPos.betweenClosed(pos.offset(-3, -1, -3), pos.offset(3, 2, 3))) {
+				if (s.overworld().getBlockState(p).is(Blocks.GLOWSTONE)) {
+					count++;
+				}
+			}
+			return count;
+		});
+		check(glowstoneBlocks == 0, "no glowstone should be placed after the detonation, found " + glowstoneBlocks);
+		LOGGER.info("PASS fastAnchorUseStopsAfterDetonation");
+	}
+
+	private static int chargesAfterHoldingRightClick(ClientGameTestContext context, TestSingleplayerContext sp, BlockPos pos,
+			int ticks, boolean fastUse) {
+		AnchorOptimizerConfig.setFastAnchorUse(fastUse);
+		try {
+			setUpAnchor(context, sp, Level.OVERWORLD, pos, 0);
+			sp.getServer().runCommand("item replace entity @a weapon.mainhand with minecraft:glowstone 64");
+			context.waitFor(client -> client.player.getMainHandItem().is(Items.GLOWSTONE)
+					&& client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(pos));
+
+			context.getInput().holdMouseFor(1, ticks); // GLFW_MOUSE_BUTTON_RIGHT, real input
+			int client = context.computeOnClient(c -> c.level.getBlockState(pos).getValue(RespawnAnchorBlock.CHARGE));
+
+			context.waitTicks(10);
+			BlockState server = serverState(sp, Level.OVERWORLD, pos);
+			check(isAnchor(server, client), "server should agree with the client's " + client + " charges, got " + server);
+			return client;
+		} finally {
+			AnchorOptimizerConfig.setFastAnchorUse(true);
+		}
 	}
 
 	/**

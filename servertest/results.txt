@@ -21,3 +21,18 @@ mod OFF    | detonated anchor disappears on screen after: [148, 149, 138, 142, 1
 mod OFF    | 20 cycles: 14 anchors placed, 12 detonated, 19 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 16, detonate 18 | client matches server at the end: true
 ping shown in tab list: 102 ms
 Grim alerts in fast loop: ON 0, FORCED 9 (AirLiquidPlace), OFF 2 (AirLiquidPlace); 0 in all detonation-latency phases.
+
+=== Second Grim run (mod 1.1.0, with fast anchor use) ===
+# Paper 1.21.11 (build 132) + GrimAC 2.3.75, simulated 100 ms ping
+anticheat that checks client-received state detected: true
+mod ON     | detonated anchor disappears on screen after: [131, 172, 142, 172, 171] ms (avg 158 ms), in client tick #[3, 3, 3, 3, 3]
+mod ON     | 20 cycles: 15 anchors placed, 15 detonated, 19 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 13, detonate 15 | client matches server at the end: true
+mod FORCED | detonated anchor disappears on screen after: [36, 62, 34, 61, 55] ms (avg 50 ms), in client tick #[1, 1, 1, 1, 1]
+mod FORCED | 20 cycles: 14 anchors placed, 13 detonated, 13 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 10, charge 10, detonate 11 | client matches server at the end: true
+mod OFF    | detonated anchor disappears on screen after: [143, 156, 109, 109, 153] ms (avg 134 ms), in client tick #[3, 3, 2, 2, 3]
+mod OFF    | 20 cycles: 9 anchors placed, 7 detonated, 10 glowstone used (1 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 18, detonate 19 | client matches server at the end: true
+fast anchor use ON  | hold right-click with glowstone on an empty anchor: server explodes it after [308, 296, 305] ms (avg 303 ms) | stray glowstone blocks placed: 0
+fast anchor use OFF | hold right-click with glowstone on an empty anchor: server explodes it after [909, 906, 907] ms (avg 907 ms) | stray glowstone blocks placed: 0
+ping shown in tab list: 103 ms
+Grim alerts: combo ON 2, FORCED 7, OFF 0 (all AirLiquidPlace); held-glowstone fast ON 0, OFF 0; detonation-latency phases 0.
+Earlier Diolez-style rule (fast whenever holding glowstone): held-glowstone fast ON exploded after [298, 305, 256] ms, 6 stray glowstone blocks; 0 Grim alerts.

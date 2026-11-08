@@ -95,6 +95,8 @@ public class ServerAnchorTest implements FabricClientGameTest {
 				detonationLatency(mode, 5);
 				combo(mode, cycles);
 			}
+			heldGlowstone(true);
+			heldGlowstone(false);
 			line("ping shown in tab list: " + tabListPing() + " ms");
 
 			disconnect();
@@ -103,6 +105,7 @@ public class ServerAnchorTest implements FabricClientGameTest {
 		} finally {
 			AnchorOptimizerConfig.setEnabled(true);
 			AnchorOptimizerConfig.setPauseOnAnticheatServers(true);
+			AnchorOptimizerConfig.setFastAnchorUse(true);
 			writeReport();
 		}
 	}
@@ -176,6 +179,55 @@ public class ServerAnchorTest implements FabricClientGameTest {
 				mode, cycles, placed, detonated, 64 - glowstoneLeft, glowstoneBlocks,
 				wrongTarget[Step.PLACE.ordinal()], wrongTarget[Step.CHARGE.ordinal()], wrongTarget[Step.DETONATE.ordinal()],
 				clientAgrees));
+	}
+
+	/**
+	 * Hold right-click with glowstone on an empty anchor: 4 charges, then the 5th use detonates it. Released as soon
+	 * as the client stops showing the anchor, like a player would. Default prediction settings.
+	 */
+	private void heldGlowstone(boolean fastUse) {
+		apply(Mode.ON);
+		AnchorOptimizerConfig.setFastAnchorUse(fastUse);
+		String label = "held-glowstone fastUse=" + (fastUse ? "ON" : "OFF");
+		mark(label + " begin");
+		List<Long> millis = new ArrayList<>();
+		int strayGlowstone = 0;
+		for (int i = 0; i < 3; i++) {
+			resetArena(0);
+			select(SLOT_GLOWSTONE);
+			requireCrosshairOn(ANCHOR, Direction.EAST);
+
+			context.getInput().holdMouse(MOUSE_RIGHT);
+			long start = 0;
+			boolean released = false;
+			Long explodedAfter = null;
+			for (int t = 0; t < 80 && (explodedAfter == null || !released); t++) {
+				long tickStart = tick();
+				if (t == 0) {
+					start = tickStart;
+				}
+				if (!released && !clientBlock().is(Blocks.RESPAWN_ANCHOR)) {
+					context.getInput().releaseMouse(MOUSE_RIGHT);
+					released = true;
+				}
+				if (explodedAfter == null && !serverHasAnchor()) {
+					explodedAfter = (System.nanoTime() - start) / 1_000_000;
+				}
+			}
+			if (!released) {
+				context.getInput().releaseMouse(MOUSE_RIGHT);
+			}
+			if (explodedAfter == null) {
+				throw new AssertionError(label + ": the anchor never exploded");
+			}
+			millis.add(explodedAfter);
+			ticks(10);
+			strayGlowstone += countInArena(Items.GLOWSTONE);
+		}
+		AnchorOptimizerConfig.setFastAnchorUse(true);
+		mark(label + " end");
+		line(String.format(Locale.ROOT, "fast anchor use %-3s | hold right-click with glowstone on an empty anchor: server explodes it after %s ms (avg %d ms) | stray glowstone blocks placed: %d",
+				fastUse ? "ON" : "OFF", millis, Math.round(millis.stream().mapToLong(Long::longValue).average().orElse(0)), strayGlowstone));
 	}
 
 	// ---- player actions (real input) ----

@@ -41,7 +41,7 @@ public final class AnchorPredictor {
 	 * @return whether the anchor was removed client-side
 	 */
 	public static boolean tryPredictDetonation(BlockState state, Level level, BlockPos pos) {
-		if (!AnchorOptimizerConfig.isEnabled()) {
+		if (!AnchorOptimizerConfig.isEnabled() || AnticheatDetection.shouldPause()) {
 			return false;
 		}
 

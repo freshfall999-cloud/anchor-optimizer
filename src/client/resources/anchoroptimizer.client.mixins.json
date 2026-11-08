@@ -4,7 +4,9 @@
 	"package": "io.github.freshfall999.anchoroptimizer.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientCommonPacketListenerImplMixin",
 		"ClientLevelAccessor",
+		"ClientPacketListenerMixin",
 		"RespawnAnchorBlockMixin"
 	],
 	"injectors": {

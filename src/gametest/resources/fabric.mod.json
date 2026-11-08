@@ -6,7 +6,8 @@
 	"environment": "client",
 	"entrypoints": {
 		"fabric-client-gametest": [
-			"io.github.freshfall999.anchoroptimizer.test.AnchorOptimizerClientGameTest"
+			"io.github.freshfall999.anchoroptimizer.test.AnchorOptimizerClientGameTest",
+			"io.github.freshfall999.anchoroptimizer.test.ServerAnchorTest"
 		]
 	},
 	"depends": {

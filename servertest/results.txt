@@ -1,0 +1,23 @@
+Raw ServerAnchorTest reports (2026-11-08). Client: this mod 1.0.0 + Fabric API 0.141.6, Fabric Loader 0.20.1.
+Grim alert counts come from the server console between the [anchortest] markers (alerts set to 1:1).
+
+# Paper 1.21.11 (build 132), no anticheat, simulated 100 ms ping
+anticheat that checks client-received state detected: false
+mod ON     | detonated anchor disappears on screen after: [55, 49, 42, 44, 54] ms (avg 49 ms), in client tick #[1, 1, 1, 1, 1]
+mod ON     | 20 cycles: 20 anchors placed, 20 detonated, 20 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 0, charge 0, detonate 0 | client matches server at the end: true
+mod FORCED | detonated anchor disappears on screen after: [56, 47, 53, 52, 52] ms (avg 52 ms), in client tick #[1, 1, 1, 1, 1]
+mod FORCED | 20 cycles: 20 anchors placed, 20 detonated, 20 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 0, charge 0, detonate 0 | client matches server at the end: true
+mod OFF    | detonated anchor disappears on screen after: [141, 148, 147, 153, 107] ms (avg 139 ms), in client tick #[3, 3, 3, 3, 2]
+mod OFF    | 20 cycles: 13 anchors placed, 12 detonated, 18 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 15, detonate 18 | client matches server at the end: true
+ping shown in tab list: 102 ms
+
+# Paper 1.21.11 (build 132) + GrimAC 2.3.75, simulated 100 ms ping
+anticheat that checks client-received state detected: true
+mod ON     | detonated anchor disappears on screen after: [195, 122, 129, 125, 156] ms (avg 145 ms), in client tick #[4, 3, 2, 2, 3]
+mod ON     | 20 cycles: 14 anchors placed, 13 detonated, 18 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 17, detonate 19 | client matches server at the end: true
+mod FORCED | detonated anchor disappears on screen after: [42, 32, 46, 56, 46] ms (avg 44 ms), in client tick #[1, 1, 1, 1, 1]
+mod FORCED | 20 cycles: 12 anchors placed, 11 detonated, 11 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 0, charge 1, detonate 1 | client matches server at the end: true
+mod OFF    | detonated anchor disappears on screen after: [148, 149, 138, 142, 150] ms (avg 145 ms), in client tick #[3, 3, 3, 3, 3]
+mod OFF    | 20 cycles: 14 anchors placed, 12 detonated, 19 glowstone used (0 of it misplaced as blocks) | clicks aimed at the wrong thing: place 19, charge 16, detonate 18 | client matches server at the end: true
+ping shown in tab list: 102 ms
+Grim alerts in fast loop: ON 0, FORCED 9 (AirLiquidPlace), OFF 2 (AirLiquidPlace); 0 in all detonation-latency phases.

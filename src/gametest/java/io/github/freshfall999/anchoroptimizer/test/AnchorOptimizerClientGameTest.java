@@ -1,6 +1,7 @@
 package io.github.freshfall999.anchoroptimizer.test;
 
 import io.github.freshfall999.anchoroptimizer.AnchorOptimizerConfig;
+import io.github.freshfall999.anchoroptimizer.AnticheatDetection;
 import java.util.Locale;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -8,6 +9,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +33,10 @@ public class AnchorOptimizerClientGameTest implements FabricClientGameTest {
 
 	@Override
 	public void runTest(ClientGameTestContext context) {
+		if (System.getenv("ANCHOR_TEST_SERVER") != null) {
+			return; // running ServerAnchorTest against an external server instead
+		}
+
 		try (TestSingleplayerContext sp = context.worldBuilder().create()) {
 			sp.getServer().runCommand("gamemode creative @a");
 			sp.getClientWorld().waitForChunksRender();
@@ -40,6 +46,7 @@ public class AnchorOptimizerClientGameTest implements FabricClientGameTest {
 			wrongPredictionIsRolledBack(context, sp);
 			disabledBehavesLikeVanilla(context, sp);
 			netherAnchorSetsSpawnAndIsNotPredicted(context, sp);
+			pausedOnServersWithTransactionAnticheat(context, sp);
 		}
 
 		LOGGER.info("All Anchor Optimizer game tests passed");
@@ -157,6 +164,38 @@ public class AnchorOptimizerClientGameTest implements FabricClientGameTest {
 		BlockState clientAfter = context.computeOnClient(client -> client.level.getBlockState(pos));
 		check(isAnchor(clientAfter, 4), "nether: client should still show the anchor, got " + clientAfter);
 		LOGGER.info("PASS netherAnchorSetsSpawnAndIsNotPredicted");
+	}
+
+	/**
+	 * Anticheats like GrimAC send ping ("transaction") packets to track what the client has received; the vanilla
+	 * server never does. Once one arrives, prediction must pause and the client must behave exactly like vanilla.
+	 */
+	private static void pausedOnServersWithTransactionAnticheat(ClientGameTestContext context, TestSingleplayerContext sp) {
+		BlockPos pos = new BlockPos(160, FLAT_Y, 0);
+		setUpAnchor(context, sp, Level.OVERWORLD, pos, 4);
+		emptyMainHand(context, sp);
+
+		check(!context.computeOnClient(client -> AnticheatDetection.detected()), "vanilla server must not look like an anticheat");
+		sp.getServer().runOnServer(server -> server.getPlayerList().getPlayers()
+				.forEach(player -> player.connection.send(new ClientboundPingPacket(1234))));
+		context.waitFor(client -> AnticheatDetection.detected());
+
+		try {
+			BlockState clientRightAfterClick = context.computeOnClient(client -> {
+				clickTopFace(client, pos);
+				return client.level.getBlockState(pos);
+			});
+			check(isAnchor(clientRightAfterClick, 4), "paused: client should still show the anchor, got " + clientRightAfterClick);
+
+			context.waitTicks(10);
+			BlockState server = serverState(sp, Level.OVERWORLD, pos);
+			check(isGone(server), "paused: server should still explode the anchor, got " + server);
+			BlockState clientAfter = context.computeOnClient(client -> client.level.getBlockState(pos));
+			check(clientAfter == server, "paused: client should match the server once its update arrives, got " + clientAfter + " vs " + server);
+		} finally {
+			context.runOnClient(client -> AnticheatDetection.reset());
+		}
+		LOGGER.info("PASS pausedOnServersWithTransactionAnticheat");
 	}
 
 	// ---- helpers ----

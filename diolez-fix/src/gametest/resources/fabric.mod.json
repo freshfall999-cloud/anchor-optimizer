@@ -1,0 +1,14 @@
+{
+	"schemaVersion": 1,
+	"id": "diolezanchoroptimizer-gametest",
+	"version": "1.0.0",
+	"name": "DiolezzAnchorOptimizer game tests",
+	"environment": "client",
+	"entrypoints": {
+		"fabric-client-gametest": ["name.modid.test.DiolezFixGameTest"]
+	},
+	"depends": {
+		"diolezanchoroptimizer": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}

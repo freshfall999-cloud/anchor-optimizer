@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "diolezanchoroptimizer",
+  "version": "${version}",
+  "name": "DiolezzAnchorOptimizer",
+  "description": "Optimizes Respawn Anchor packet sequencing for high-ping PvP players. Client-side only. Fixed for Minecraft 1.21.11 (the 1.21.1 build crashed with NoSuchMethodError).",
+  "authors": [
+    "Diolezz"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/diolezanchoroptimizer/icon.jpg",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "name.modid.DiolezzAnchorOptimizer"
+    ]
+  },
+  "mixins": [
+    "diolezanchoroptimizer.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

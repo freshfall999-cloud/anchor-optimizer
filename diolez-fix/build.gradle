@@ -1,0 +1,45 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+}
+
+version = project.mod_version
+group = 'name.modid'
+base { archivesName = 'diolezanchoroptimizer' }
+
+fabricApi {
+	configureTests {
+		createSourceSet = true
+		modId = "diolezanchoroptimizer-gametest"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// Set WITH_ANCHOR_OPTIMIZER=<path to anchor-optimizer jar> to run the game tests with both mods installed.
+	if (System.getenv("WITH_ANCHOR_OPTIMIZER")) {
+		modLocalRuntime files(System.getenv("WITH_ANCHOR_OPTIMIZER"))
+	}
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+	filesMatching("fabric.mod.json") { expand "version": version }
+}
+
+tasks.withType(JavaCompile).configureEach { it.options.release = 21 }
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	from("LICENSE") { rename { "${it}_diolezanchoroptimizer" } }
+}
